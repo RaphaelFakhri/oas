@@ -250,7 +250,7 @@ export function fixOasRelativeServers(schema: OpenAPI.Document, filePath?: strin
       const schemaElement = ((schema as OpenAPIV3_1.Document)[component] || {}) as NonNullable<typeof schema.paths>;
       Object.keys(schemaElement).forEach(path => {
         const pathItem = schemaElement[path] || {};
-        Object.keys(pathItem).forEach((opItem: keyof typeof pathItem) => {
+        (Object.keys(pathItem) as (keyof typeof pathItem)[]).forEach(opItem => {
           const pathItemElement = pathItem[opItem];
           if (!pathItemElement) {
             return;

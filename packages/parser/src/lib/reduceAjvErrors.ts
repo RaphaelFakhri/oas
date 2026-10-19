@@ -25,7 +25,10 @@ export function reduceAjvErrors(errors: ErrorObject[]): ErrorObject[] {
     // the user with indecipherable noise we should instead relay the more specific error to them.
     // If this is all that's present in the stack then as a safety net before we wrap up we'll just
     // return the original `errors` stack.
-    if (["must have required property '$ref'", 'must match exactly one schema in oneOf'].includes(err.message)) {
+    if (
+      err.message &&
+      ["must have required property '$ref'", 'must match exactly one schema in oneOf'].includes(err.message)
+    ) {
       return;
     }
 

@@ -4,6 +4,9 @@
     "isolatedDeclarations": false,
     "noImplicitAny": false,
     "rootDir": "..",
+
+    // The tests have not yet been migrated to strict mode.
+    "strict": false,
     "types": ["node"]
   },
   "include": ["./**/*"]

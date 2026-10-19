@@ -35,8 +35,7 @@ export class OpenAPISpecificationValidator extends SpecificationValidator {
 
   run(): void {
     const operationIds: string[] = [];
-    Object.keys(this.api.paths || {}).forEach(pathName => {
-      const path = this.api.paths[pathName];
+    Object.entries(this.api.paths || {}).forEach(([pathName, path]) => {
       const pathId = `/paths${pathName}`;
 
       if (path && pathName.startsWith('/')) {
@@ -53,8 +52,8 @@ export class OpenAPISpecificationValidator extends SpecificationValidator {
      */
     if (isOpenAPI30(this.api)) {
       if (this.api.components) {
-        Object.keys(this.api.components).forEach((componentType: keyof typeof this.api.components) => {
-          Object.keys(this.api.components[componentType]).forEach(componentName => {
+        Object.entries(this.api.components).forEach(([componentType, components]) => {
+          Object.keys(components || {}).forEach(componentName => {
             if (!/^[a-zA-Z0-9.\-_]+$/.test(componentName)) {
               const componentId = `/components/${componentType}/${componentName}`;
 
@@ -236,8 +235,11 @@ export class OpenAPISpecificationValidator extends SpecificationValidator {
        * @see {@link https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.0.md#fixed-fields-10}
        * @see {@link https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#fixed-fields-10}
        */
-      if (!param.schema && param.content) {
-        this.validateParameterContent(param.content, parameterId);
+      if (!param.schema) {
+        if (param.content) {
+          this.validateParameterContent(param.content, parameterId);
+        }
+
         return;
       } else if ('$ref' in param.schema) {
         return;
@@ -252,7 +254,7 @@ export class OpenAPISpecificationValidator extends SpecificationValidator {
    * Note: The requirement for exactly one media type is already enforced by the OpenAPI JSON schema.
    */
   private validateParameterContent(
-    content: OpenAPIV3_1.ParameterObject['content'] | OpenAPIV3.ParameterObject['content'],
+    content: NonNullable<OpenAPIV3_1.ParameterObject['content'] | OpenAPIV3.ParameterObject['content']>,
     parameterId: string,
   ) {
     const mediaTypes = Object.keys(content);
@@ -278,8 +280,7 @@ export class OpenAPISpecificationValidator extends SpecificationValidator {
    *
    */
   private validateResponse(response: OpenAPIV3_1.ResponseObject | OpenAPIV3.ResponseObject, responseId: string) {
-    Object.keys(response.headers || {}).forEach(headerName => {
-      const header = response.headers[headerName];
+    Object.entries(response.headers || {}).forEach(([headerName, header]) => {
       const headerId = `${responseId}/headers/${headerName}`;
       if ('$ref' in header) {
         return;
@@ -290,22 +291,18 @@ export class OpenAPISpecificationValidator extends SpecificationValidator {
           this.validateSchema(header.schema, headerId);
         }
       } else if (header.content) {
-        Object.keys(header.content).forEach(mediaType => {
-          if (header.content[mediaType].schema) {
-            if (!('$ref' in header.content[mediaType].schema)) {
-              this.validateSchema(header.content[mediaType].schema || {}, `${headerId}/content/${mediaType}/schema`);
-            }
+        Object.entries(header.content).forEach(([mediaType, media]) => {
+          if (media.schema && !('$ref' in media.schema)) {
+            this.validateSchema(media.schema, `${headerId}/content/${mediaType}/schema`);
           }
         });
       }
     });
 
     if (response.content) {
-      Object.keys(response.content).forEach(mediaType => {
-        if (response.content[mediaType].schema) {
-          if (!('$ref' in response.content[mediaType].schema)) {
-            this.validateSchema(response.content[mediaType].schema || {}, `${responseId}/content/${mediaType}/schema`);
-          }
+      Object.entries(response.content).forEach(([mediaType, media]) => {
+        if (media.schema && !('$ref' in media.schema)) {
+          this.validateSchema(media.schema, `${responseId}/content/${mediaType}/schema`);
         }
       });
     }

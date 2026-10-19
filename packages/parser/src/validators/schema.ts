@@ -126,7 +126,7 @@ export function validateSchema(
      * @see {@link https://github.com/OAI/OpenAPI-Specification/issues/2689}
      * @see {@link https://github.com/ajv-validator/ajv/issues/1573}
      */
-    const schemaDynamicRef = schema.$defs.schema;
+    const schemaDynamicRef = schema.$defs?.schema;
     if (typeof schemaDynamicRef === 'object' && '$dynamicAnchor' in schemaDynamicRef) {
       delete schemaDynamicRef.$dynamicAnchor;
     }
@@ -154,7 +154,7 @@ export function validateSchema(
   }
 
   let additionalErrors = 0;
-  let reducedErrors = reduceAjvErrors(ajv.errors).filter(err => {
+  let reducedErrors = reduceAjvErrors(ajv.errors || []).filter(err => {
     return !suppressedInstancePaths.some(path => err.instancePath === path || err.instancePath.startsWith(`${path}/`));
   });
 
@@ -198,7 +198,7 @@ export function validateSchema(
     // obviously not show the user all of their validation errors but it's better than nothing.
     return {
       valid: false,
-      errors: [{ message: err.message }],
+      errors: [{ message: err instanceof Error ? err.message : String(err) }],
       warnings: [],
       additionalErrors,
       specification: specificationName,

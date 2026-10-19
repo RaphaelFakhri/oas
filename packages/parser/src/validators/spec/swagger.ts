@@ -38,8 +38,7 @@ export class SwaggerSpecificationValidator extends SpecificationValidator {
       }
     });
 
-    Object.keys(this.api.definitions || {}).forEach(definitionName => {
-      const definition = this.api.definitions[definitionName];
+    Object.entries(this.api.definitions || {}).forEach(([definitionName, definition]) => {
       const definitionId = `/definitions/${definitionName}`;
 
       if (!/^[a-zA-Z0-9.\-_]+$/.test(definitionName)) {
@@ -75,9 +74,8 @@ export class SwaggerSpecificationValidator extends SpecificationValidator {
 
         this.validateParameters(path, pathId, operation, operationId);
 
-        Object.keys(operation.responses || {}).forEach(responseName => {
-          const response = operation.responses[responseName];
-          if ('$ref' in response || !response) {
+        Object.entries(operation.responses || {}).forEach(([responseName, response]) => {
+          if (!response || '$ref' in response) {
             return;
           }
 
@@ -275,8 +273,7 @@ export class SwaggerSpecificationValidator extends SpecificationValidator {
       }
     }
 
-    Object.keys(response.headers || {}).forEach(headerName => {
-      const header = response.headers[headerName];
+    Object.entries(response.headers || {}).forEach(([headerName, header]) => {
       const headerId = `${responseId}/headers/${headerName}`;
       this.validateSchema(header, headerId);
     });
@@ -332,10 +329,11 @@ export class SwaggerSpecificationValidator extends SpecificationValidator {
    */
   private collectProperties(schemaObj: IJsonSchema, props: Record<string, IJsonSchema>) {
     if (schemaObj.properties) {
-      Object.keys(schemaObj.properties).forEach(property => {
+      const { properties } = schemaObj;
+      Object.keys(properties).forEach(property => {
         // oxlint-disable-next-line no-prototype-builtins -- Intentional
-        if (schemaObj.properties.hasOwnProperty(property)) {
-          props[property] = schemaObj.properties[property];
+        if (properties.hasOwnProperty(property)) {
+          props[property] = properties[property];
         }
       });
     }

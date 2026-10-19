@@ -8,9 +8,7 @@
       // Needed because `@apidevtools/json-schema-ref-parser` uses `window` and `location`.
       "DOM"
     ],
-
-    // TypeScript 7 enables `strict` by default but this package has not yet been migrated to it.
-    "strict": false
+    "strict": true
   },
   "include": ["./src/**/*"],
   "exclude": ["dist"]
